@@ -66,7 +66,11 @@ def parse_log_line(line):
 
 		return None		
 
-	return timestamp.strip(), user.strip(), event.strip()	
+	return timestamp.strip(), user.strip(), event.strip()
+
+def extract_hour(timestamp):
+	return timestamp[11:13]
+
 		
 #-----------------------Main flow--------------------------------------------------------------
 
@@ -89,27 +93,89 @@ if __name__ == '__main__':
 
 logs_for_user = {}
 logs_for_type = {}
+events_by_hour = {}
+error_by_hour = {}
+activity_user_by_hour = {}
+error_by_user = {}
+max_activity_per_user = {}
+errors_user_by_hour = {}
+errors_by_user_and_type = {}
 
 for log in parsed_logs:
-	_, user, type = log
+	timestamp, user, type = log
+	hour = extract_hour(timestamp)
+
+	# Global count
 	logs_for_user[user]= logs_for_user.get(user, 0) + 1
 	logs_for_type[type]= logs_for_type.get(type, 0) + 1
 
+	# Events by hour
+	events_by_hour[hour] = events_by_hour.get(hour, 0) +1
+
+	# Error by hour
+	if type in ["error_404", "error_500"]:
+		error_by_hour[hour] = error_by_hour.get(hour, 0) +1
+
+	# Activity user/hour
+	if user not in activity_user_by_hour:
+		activity_user_by_hour[user] = {}
+	activity_user_by_hour[user][hour] = activity_user_by_hour[user].get(hour, 0) +1
+
+	# whoe makes more errors?
+	if type in ["error_404", "error_500"]:
+		error_by_user[user] = error_by_user.get(user, 0) +1
+		
+		
+		# Errors by user/hour
+		if user not in errors_user_by_hour:
+			errors_user_by_hour[user] = {}
+		errors_user_by_hour[user][hour] = errors_user_by_hour[user].get(hour, 0) +1	
+
+user_more_errors = max(error_by_user, key= error_by_user.get)
+
+# Unusual spikes in activity
+unusual_spikes = {}
+for user, hours in activity_user_by_hour.items():
+	spikes = {h: c for h, c in hours.items() if c>10}
+	if spikes:
+		unusual_spikes[user] = spikes
+ 
+# Peak unusual activity per user
+for user, hours in activity_user_by_hour.items():
+	max_events = 0
+	peak_hour = None
+
+	for hour, events in hours.items():
+		if events > max_events:
+			max_events = events
+			peak_hour = hour
+
+	max_activity_per_user[user] = {"hour": peak_hour, "events": max_events}
 	
+# Correlation: errors during peak activity of user with most errors
+peak_hour_user_more_errors = max_activity_per_user[user_more_errors]["hour"]
+
+errors_in_peak = 0
+if user_more_errors in errors_user_by_hour:
+	errors_in_peak = errors_user_by_hour[user_more_errors].get(peak_hour_user_more_errors, 0)
+
+
+
+
 total_events = sum(logs_for_user.values())
-
 most_active_user = max(logs_for_user, key=logs_for_user.get)
-
 most_frequent_event = max(logs_for_type, key=logs_for_type.get)
-
 top3_event = sorted(logs_for_type.items(),key= lambda x: x[1], reverse= True)[:3]
 top3_users = sorted(logs_for_user.items(),key= lambda x: x[1], reverse= True)[:3]
 
-# prueba visual
-print(top3_users)
-print(top3_event)
-print(most_frequent_event)
-print(most_active_user)
-print(f"ejemplo: ", {parsed_logs[2]})
-print(f"Events per user: {logs_for_user}")
-print(f"Events per type: {logs_for_type}")
+# Top info
+summary = {
+	"most_active_user": most_active_user, 
+	"user_with_most_errors": user_more_errors,
+	"peak_hour_of_problem_user": peak_hour_user_more_errors,
+	"errors_in_peak": errors_in_peak,
+	"top3_users": top3_users,
+	"top3_events": top3_event,
+}
+
+print(summary)
