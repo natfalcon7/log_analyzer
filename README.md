@@ -31,9 +31,43 @@ valid example:
 1. Place your "logs.txt" file in the same folder as the script.
 2. Run:
 ````
-python analayzer.py
+python simple_log_analyzer.py
 ````
 The program prints a structured summary using pprint.
+
+------------------------------------------------------
+# Log Generator (included in the repository)
+
+This project includes a Python script (`generate_logs.py`) that creates synthetic log data 
+for testing and demonstration purposes. The generator is designed to produce logs that 
+match exactly the format expected by the analyzer.
+
+## What the generator does
+
+The generator:
+
+- Creates a file named `logs.txt`
+- Produces a configurable number of log lines (`NUM_LINES`)
+- Simulates a realistic time flow by increasing timestamps every 1–5 seconds
+- Randomly assigns users and events from predefined lists
+- Intentionally injects noisy/invalid lines (8%) to test the robustness of the analyzer
+
+### Configurable parameters
+
+Inside `log_generator.py` you can modify:
+
+```python
+NUM_LINES = 12000          # number of logs to generate
+NOISE_PROBABILITY = 0.08   # percentage of invalid lines
+```
+You can also adjust the list of users or events if needed.
+
+# How to run the generator
+
+python log_generator.py
+
++ This will overwrite logs.txt with a new dataset.
+Because the data is random, different runs will lead to different analysis results.
 
 -------------------------------------------------------
 # What the program analyzes
@@ -51,7 +85,7 @@ The program prints a structured summary using pprint.
 *Error analysis*
 * User with most errors
 * Errors per system hour
-* Errors per user and type(404, 500)ç
+* Errors per user and type(404, 500)
 * Peak hour of the problem user
 
 *Correlations and behavior*

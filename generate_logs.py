@@ -1,9 +1,9 @@
 import random
 from datetime import datetime, timedelta
 
-# -----------------------------
+
 # Configuración general
-# -----------------------------
+
 
 NUM_LINES = 12000
 OUTPUT_FILE = "logs.txt"
@@ -26,9 +26,9 @@ EVENTS = [
 NOISE_PROBABILITY = 0.08  # 8% de líneas con ruido
 
 
-# -----------------------------
+
 # Generadores auxiliares
-# -----------------------------
+
 
 def generate_timestamp(current_time):
     # Avanza el tiempo entre 1 y 5 segundos
@@ -55,9 +55,9 @@ def generate_noise():
     return random.choice(noise_types)
 
 
-# -----------------------------
+
 # Generación del archivo
-# -----------------------------
+
 
 def generate_log_file():
     current_time = datetime.now()
