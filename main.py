@@ -63,7 +63,7 @@ def main():
         "events_by_hour": stats["events_by_hour"],
         "errors_by_hour": stats["error_by_hour"],
         "alert": alert_message,
-        "parse_errors": errors
+        "parse_errors_count": len(errors)
     }
 
     # Step 5: Display
